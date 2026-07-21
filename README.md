@@ -15,7 +15,7 @@ Amber-phosphor CIA terminal dashboard included.
 | Session length / play history | Presence polling | Fully automatic |
 | Trophies + campaign checklist | PSN trophy API | Fully automatic — synced every 6h (and on demand) |
 | Lifetime K/D, wins, losses | Combat Record screenshot | Semi-auto — drop a screenshot, OCR extracts and diffs vs last sync |
-| Per-match stat lines | No API exists (Activision) | Optional: screenshot OCR or `POST /api/match` |
+| Per-match / per-map stat lines | No API exists (Activision Elite shut down 2014) | End-of-match screenshot OCR — auto-classified, aggregated per map. Fully hands-off with the auto-ingest watcher below |
 
 The accuracy backbone is **snapshot diffing**: two combat-record snapshots a
 week apart give exact weekly K/D, games played, and win rate with zero
@@ -63,6 +63,26 @@ every 60 days (the dashboard's PSN LINK indicator goes red when that happens).
   Tesseract automatically. Model defaults to `claude-opus-4-8`
   (`CLAUDE_MODEL` to override).
 
+The pipeline auto-detects what you gave it: a **lifetime combat record** screen
+becomes a snapshot (for diffing), an **end-of-match / zombies game-over** screen
+becomes a per-map match entry (map, mode, K/D, result, round) shown in the MAP
+INTEL panel. Maps are matched against the full BO1/BO2 rosters (base + DLC).
+
+### Zero-touch collection (auto-ingest)
+
+There is no Activision API for BO1/BO2 — the Elite stat service shut down in
+2014, and the modern CoD API starts at BO4. The closest thing to automatic
+collection is the built-in watcher: set `AUTO_INGEST_DIR=./ingest-inbox` in
+`.env` and point your capture pipeline at that folder —
+
+- capture card / Elgato auto-save directory
+- an OBS screenshot hotkey while playing via remote play or capture card
+- a Dropbox / Syncthing / Nextcloud folder that your phone photos sync into
+  (snap the TV at the end of a match, it files itself)
+
+Every image that lands there is OCR'd, classified, recorded, and moved to
+`processed/` (or `failed/` if unreadable). No clicks, no uploads.
+
 Upload via the dashboard dropzone, or:
 
 ```bash
@@ -93,7 +113,8 @@ docker compose up -d --build
 | `/api/campaign` | GET | Campaign checklist (auto-derived from trophies) |
 | `/api/snapshots` | GET | Lifetime stat snapshots (`?game=BO1`) |
 | `/api/snapshots/diff` | GET | Diff of the two latest snapshots (`?game=BO2`) |
-| `/api/upload` | POST | Raw image body → OCR → snapshot |
+| `/api/upload` | POST | Raw image body → OCR → snapshot or match (auto-detected) |
+| `/api/maps` | GET | Per-map aggregates: matches, K/D, W–L, best zombies round |
 | `/api/match` | POST | Manual per-match stat entry |
 | `/api/sync/trophies` | POST | Trigger trophy sync now |
 | `/api/sync/presence` | POST | Trigger a presence sweep now |

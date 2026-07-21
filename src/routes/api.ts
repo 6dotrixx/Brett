@@ -4,8 +4,7 @@ import { config } from "../config.js";
 import { authStatus } from "../psn/auth.js";
 import { syncTrophies, CAMPAIGN_MISSIONS } from "../psn/trophies.js";
 import { pollPresence } from "../psn/presence.js";
-import { extractStats } from "../ocr/index.js";
-import { hasUsableStats } from "../ocr/parse.js";
+import { processImage } from "../pipeline.js";
 import { log } from "../logger.js";
 
 export const api = Router();
@@ -140,8 +139,9 @@ api.get("/snapshots/diff", (req: Request, res: Response) => {
   });
 });
 
-// ── Screenshot upload → OCR → snapshot ────────────────────────────────────
-// Accepts a raw image body (fetch with the file blob as body).
+// ── Screenshot upload → OCR → snapshot or match ───────────────────────────
+// Accepts a raw image body (fetch with the file blob as body). The screen type
+// (lifetime combat record vs end-of-match) is auto-detected.
 api.post("/upload", async (req: Request, res: Response) => {
   try {
     const image = req.body as Buffer;
@@ -149,28 +149,41 @@ api.post("/upload", async (req: Request, res: Response) => {
       res.status(400).json({ ok: false, error: "Send the image as the raw request body with an image/* content type" });
       return;
     }
-    const { stats, engine, rawText } = await extractStats(image);
-    if (!hasUsableStats(stats)) {
-      res.status(422).json({ ok: false, error: "No stats could be read from this screenshot", engine, stats, rawText });
+    const gameFallback = typeof req.query.game === "string" ? req.query.game : "BO1";
+    const result = await processImage(image, gameFallback);
+    if (!result.ok) {
+      res.status(422).json(result);
       return;
     }
-    const game = stats.game ?? (typeof req.query.game === "string" ? req.query.game : "BO1");
-    const info = db
-      .prepare(
-        `INSERT INTO lifetime_snapshots (player_id, game, kills, deaths, wins, losses, kd_ratio, win_pct, score, accuracy, headshots, time_played, raw_text, source)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
-        playerId(), game, stats.kills, stats.deaths, stats.wins, stats.losses,
-        stats.kdRatio, stats.winPct, stats.score, stats.accuracy, stats.headshots,
-        stats.timePlayed, rawText, engine === "claude" ? "ocr-claude" : "ocr-tesseract"
-      );
-    log.info(`Snapshot ${info.lastInsertRowid} recorded for ${game} via ${engine}`);
-    res.json({ ok: true, snapshotId: Number(info.lastInsertRowid), game, engine, stats });
+    res.json(result);
   } catch (err: any) {
     log.error("Upload/OCR failed", err);
     res.status(500).json({ ok: false, error: String(err?.message ?? err) });
   }
+});
+
+// ── Per-map aggregates ────────────────────────────────────────────────────
+api.get("/maps", (req: Request, res: Response) => {
+  const game = typeof req.query.game === "string" ? req.query.game : null;
+  const rows = db
+    .prepare(
+      `SELECT game, map, mode, COUNT(*) AS matches,
+        SUM(kills) AS kills, SUM(deaths) AS deaths,
+        SUM(CASE WHEN result = 'win' THEN 1 ELSE 0 END) AS wins,
+        SUM(CASE WHEN result = 'loss' THEN 1 ELSE 0 END) AS losses,
+        MAX(round) AS best_round,
+        MAX(created_at) AS last_played
+       FROM match_stats
+       WHERE player_id = ? AND map IS NOT NULL ${game ? "AND game = ?" : ""}
+       GROUP BY game, map
+       ORDER BY matches DESC, kills DESC`
+    )
+    .all(...(game ? [playerId(), game] : [playerId()])) as any[];
+  const maps = rows.map((r) => ({
+    ...r,
+    kd_ratio: r.kills != null && r.deaths ? Math.round((r.kills / r.deaths) * 100) / 100 : null,
+  }));
+  res.json({ maps });
 });
 
 // Manual per-match stat entry (optional escape hatch)

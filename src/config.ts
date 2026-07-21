@@ -17,6 +17,7 @@ export const config = {
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || "",
   claudeModel: process.env.CLAUDE_MODEL || "claude-opus-4-8",
   titleMatch: new RegExp(process.env.TITLE_MATCH || "black ops", "i"),
+  autoIngestDir: process.env.AUTO_INGEST_DIR || "",
 };
 
 export type Config = typeof config;

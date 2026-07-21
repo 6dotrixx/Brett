@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { config } from "./config.js";
 import { api } from "./routes/api.js";
 import { startPoller } from "./poller.js";
+import { startIngestWatcher } from "./ingest.js";
 import { log } from "./logger.js";
 import "./db.js";
 
@@ -19,4 +20,5 @@ app.use(express.static(publicDir));
 app.listen(config.port, () => {
   log.info(`◤ COMBAT RECORD TERMINAL ◢ online at http://localhost:${config.port}`);
   startPoller();
+  startIngestWatcher();
 });

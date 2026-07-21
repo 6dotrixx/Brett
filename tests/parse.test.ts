@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseCombatRecord, hasUsableStats } from "../src/ocr/parse.js";
+import { parseCombatRecord, parseMatchScreen, hasUsableStats, looksLikeMatchScreen } from "../src/ocr/parse.js";
+import { findMap } from "../src/psn/maps.js";
 
 test("parses a BO2 combat record screen", () => {
   const text = `
@@ -59,6 +60,45 @@ test("tolerates noisy OCR punctuation", () => {
   assert.equal(s.game, "BO2");
   assert.equal(s.kills, 1234);
   assert.equal(s.deaths, 567);
+});
+
+test("parses an end-of-match MP scoreboard", () => {
+  const text = `
+    VICTORY
+    TEAM DEATHMATCH - NUKETOWN 2025
+    SixDotRixx  KILLS 38  DEATHS 21
+  `;
+  const m = parseMatchScreen(text);
+  assert.equal(m.map, "Nuketown 2025");
+  assert.equal(m.game, "BO2");
+  assert.equal(m.mode, "Team Deathmatch");
+  assert.equal(m.kills, 38);
+  assert.equal(m.deaths, 21);
+  assert.equal(m.result, "win");
+  assert.ok(looksLikeMatchScreen(parseCombatRecord(text), m));
+});
+
+test("parses a zombies game-over screen with round", () => {
+  const text = "GAME OVER\nYou survived 31 rounds? ROUND 31\nKINO DER TOTEN\nKILLS 412";
+  const m = parseMatchScreen(text);
+  assert.equal(m.map, "Kino der Toten");
+  assert.equal(m.game, "BO1");
+  assert.equal(m.mapCategory, "zombies");
+  assert.equal(m.round, 31);
+});
+
+test("findMap prefers longest names and respects game hint", () => {
+  assert.equal(findMap("welcome to nuketown 2025 lobby")?.map, "Nuketown 2025");
+  assert.equal(findMap("nuketown", "BO1")?.map, "Nuketown");
+  assert.equal(findMap("summit loading screen")?.game, "BO1");
+  assert.equal(findMap("no map here"), null);
+});
+
+test("lifetime record is not misclassified as a match screen", () => {
+  const text = "BLACK OPS COMBAT RECORD KILLS 100 DEATHS 50 WINS 10 LOSSES 5 WIN % 66 TIME PLAYED 2d";
+  const record = parseCombatRecord(text);
+  const m = parseMatchScreen(text);
+  assert.ok(!looksLikeMatchScreen(record, m));
 });
 
 test("returns nulls and unusable flag for unrelated text", () => {

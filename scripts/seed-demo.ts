@@ -39,6 +39,29 @@ insSnap.run(pid, "BO1", iso(1 * H), 14655, 11342, 438, 398, 1.29, 52.4, 2930500,
 insSnap.run(pid, "BO2", iso(7 * D), 40890, 29610, 1188, 975, 1.38, 54.9, 5350100, 18.3, 4051, "20d 22h");
 insSnap.run(pid, "BO2", iso(2 * H), 41323, 29881, 1204, 986, 1.38, 55.0, 5412900, 18.4, 4102, "21d 4h");
 
+// Per-map match stats (as produced by end-of-match screenshot OCR)
+const insMatch = db.prepare(
+  `INSERT INTO match_stats (session_id, player_id, game, mode, map, kills, deaths, result, round, source, created_at)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'ocr-claude', ?)`
+);
+const matches: [string, string, string, number, number, string | null, number | null, number][] = [
+  // game, mode, map, kills, deaths, result|null, round|null, days ago
+  ["BO1", "Team Deathmatch", "Firing Range", 27, 14, "win", null, 6],
+  ["BO1", "Domination", "Jungle", 31, 22, "loss", null, 6],
+  ["BO1", "Team Deathmatch", "Nuketown", 35, 19, "win", null, 4],
+  ["BO1", "Zombies", "Kino der Toten", 412, 3, null, 31, 2],
+  ["BO1", "Zombies", "Ascension", 288, 2, null, 24, 2],
+  ["BO2", "Hardpoint", "Raid", 29, 25, "win", null, 5],
+  ["BO2", "Team Deathmatch", "Hijacked", 41, 17, "win", null, 3],
+  ["BO2", "Kill Confirmed", "Standoff", 24, 20, "loss", null, 3],
+  ["BO2", "Team Deathmatch", "Nuketown 2025", 38, 21, "win", null, 1],
+  ["BO2", "Zombies", "Mob of the Dead", 356, 4, null, 27, 1],
+  ["BO2", "Team Deathmatch", "Hijacked", 33, 18, "win", null, 1],
+];
+for (const [game, mode, map, kills, deaths, result, round, daysAgo] of matches) {
+  insMatch.run(null, pid, game, mode, map, kills, deaths, result, round, iso(daysAgo * D));
+}
+
 // Trophies — a plausible spread
 const insTrophy = db.prepare(
   `INSERT OR REPLACE INTO trophies (player_id, game, np_comm_id, trophy_id, name, detail, grade, earned, earned_at)

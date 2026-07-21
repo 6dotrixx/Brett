@@ -1,3 +1,5 @@
+import { findMap, findMode } from "../psn/maps.js";
+
 export interface CombatRecordStats {
   game: "BO1" | "BO2" | null;
   kills: number | null;
@@ -80,4 +82,60 @@ export function parseCombatRecord(rawText: string): CombatRecordStats {
 /** True when the parse produced at least one core stat worth snapshotting. */
 export function hasUsableStats(s: CombatRecordStats): boolean {
   return [s.kills, s.deaths, s.wins, s.losses, s.score].some((v) => v != null);
+}
+
+// ── End-of-match screens ──────────────────────────────────────────────────
+
+export interface MatchScreenStats {
+  game: "BO1" | "BO2" | null;
+  map: string | null;
+  mapCategory: "mp" | "zombies" | null;
+  mode: string | null;
+  kills: number | null;
+  deaths: number | null;
+  result: "win" | "loss" | "draw" | null;
+  round: number | null;
+}
+
+/**
+ * Parses raw OCR text from an end-of-match / scoreboard screen: map name
+ * (matched against the known BO1/BO2 rosters), mode, result, K/D and — for
+ * zombies — the round reached.
+ */
+export function parseMatchScreen(rawText: string): MatchScreenStats {
+  const text = rawText.replace(/\r/g, "");
+  let game: "BO1" | "BO2" | null = null;
+  if (/black\s*ops\W*(ii|2|[il1|]{2})\b/i.test(text)) game = "BO2";
+  else if (/black\s*ops/i.test(text)) game = "BO1";
+
+  const mapEntry = findMap(text, game);
+  const mode = findMode(text);
+
+  let result: MatchScreenStats["result"] = null;
+  if (/\b(victory|match won|you win)\b/i.test(text)) result = "win";
+  else if (/\b(defeat|match lost|game over)\b/i.test(text)) result = "loss";
+  else if (/\b(draw|tie)\b/i.test(text)) result = "draw";
+
+  const round = text.match(/\bround[\s:.\-]*([\d]+)/i);
+
+  return {
+    game: game ?? mapEntry?.game ?? null,
+    map: mapEntry?.map ?? null,
+    mapCategory: mapEntry?.category ?? (mode === "Zombies" ? "zombies" : null),
+    mode: mode ?? (mapEntry?.category === "zombies" ? "Zombies" : null),
+    kills: grabInt(text, /\bkills\b/),
+    deaths: grabInt(text, /\bdeaths\b/),
+    result,
+    round: round ? toInt(round[1]) : null,
+  };
+}
+
+/**
+ * Decides which screen a parse came from. A lifetime combat record carries
+ * aggregate-only fields (wins/losses/win% / time played); an end-of-match
+ * screen names a map. Map + no aggregates → match screen.
+ */
+export function looksLikeMatchScreen(record: CombatRecordStats, match: MatchScreenStats): boolean {
+  if (!match.map && match.round == null) return false;
+  return record.wins == null && record.losses == null && record.winPct == null && record.timePlayed == null;
 }

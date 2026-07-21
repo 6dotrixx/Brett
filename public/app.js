@@ -106,6 +106,34 @@
       .join("");
   }
 
+  // ── map intel ──
+  async function loadMaps() {
+    const { maps } = await api("/maps");
+    const note = $("#map-note");
+    const tbody = $("#maps-table tbody");
+    if (!maps || maps.length === 0) {
+      note.innerHTML = `<span class="dim">No map data yet — drop an end-of-match screenshot in the INTEL UPLOAD above and it lands here automatically.</span>`;
+      tbody.innerHTML = "";
+      return;
+    }
+    note.innerHTML = `<span>${maps.length} maps on record · <b>${maps.reduce((a, m) => a + m.matches, 0)}</b> matches logged</span>`;
+    tbody.innerHTML = maps
+      .map(
+        (m) => `<tr>
+          <td>${esc(m.map)}</td>
+          <td>${esc(m.game)}</td>
+          <td class="dim">${esc(m.mode || "—")}</td>
+          <td>${m.matches}</td>
+          <td>${m.kills != null ? m.kills.toLocaleString() : "—"}</td>
+          <td>${m.deaths != null ? m.deaths.toLocaleString() : "—"}</td>
+          <td>${m.kd_ratio ?? "—"}</td>
+          <td>${m.wins || m.losses ? `${m.wins}–${m.losses}` : "—"}</td>
+          <td>${m.best_round ?? "—"}</td>
+        </tr>`
+      )
+      .join("");
+  }
+
   // ── campaign ──
   async function loadCampaign() {
     const data = await api("/campaign");
@@ -149,7 +177,11 @@
         body: file,
       });
       const data = await res.json();
-      if (data.ok) {
+      if (data.ok && data.type === "match") {
+        const m = data.match || {};
+        status.innerHTML = `<span class="up" style="color:var(--green)">✓ MATCH LOGGED via ${data.engine.toUpperCase()} — ${esc(m.map || "unknown map")}${m.mode ? " · " + esc(m.mode) : ""}${m.round != null ? " · round " + m.round : ""} (${esc(data.game)}).</span>`;
+        await Promise.all([loadMaps(), loadStatus()]);
+      } else if (data.ok) {
         status.innerHTML = `<span class="up" style="color:var(--green)">✓ INTEL PROCESSED via ${data.engine.toUpperCase()} — snapshot #${data.snapshotId} (${esc(data.game)}) recorded.</span>`;
         await Promise.all([loadStats(), loadStatus()]);
       } else {
@@ -199,6 +231,7 @@
     loadStatus();
     loadStats();
     loadSessions();
+    loadMaps();
     loadCampaign();
     loadTrophies();
   }
