@@ -1,0 +1,20 @@
+# systemd unit for bare-metal deploys (VPS / Raspberry Pi).
+#   sudo cp deploy/combat-record.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now combat-record
+# Adjust User and WorkingDirectory to your install path.
+[Unit]
+Description=Black Ops Combat Record terminal
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/combat-record
+ExecStart=/usr/bin/node dist/index.js
+Restart=on-failure
+RestartSec=10
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

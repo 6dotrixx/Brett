@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COMBAT RECORD // BLACK OPS TERMINAL</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>☠</text></svg>" />
+</head>
+<body>
+  <div class="crt">
+    <header>
+      <div class="masthead">
+        <span class="glyph">◤◢</span>
+        <h1>COMBAT RECORD <span class="dim">//</span> BLACK OPS TERMINAL</h1>
+      </div>
+      <div class="statusline" id="statusline">
+        <span class="blink">█</span> ESTABLISHING UPLINK...
+      </div>
+    </header>
+
+    <main>
+      <!-- LIVE STATUS -->
+      <section class="panel" id="live-panel">
+        <h2>▌LIVE PRESENCE</h2>
+        <div class="live-grid">
+          <div class="live-box">
+            <div class="label">OPERATIVE</div>
+            <div class="value" id="operative">—</div>
+          </div>
+          <div class="live-box">
+            <div class="label">PSN LINK</div>
+            <div class="value" id="psn-link">—</div>
+          </div>
+          <div class="live-box">
+            <div class="label">STATUS</div>
+            <div class="value" id="live-status">—</div>
+          </div>
+          <div class="live-box">
+            <div class="label">LAST SWEEP</div>
+            <div class="value" id="last-poll">—</div>
+          </div>
+        </div>
+        <div id="active-session" class="active-session hidden"></div>
+      </section>
+
+      <!-- STAT DIFF -->
+      <section class="panel">
+        <h2>▌LIFETIME RECORD <span class="dim small">— snapshot diffing</span>
+          <span class="tabs">
+            <button class="tab active" data-game="BO1">BO1</button>
+            <button class="tab" data-game="BO2">BO2</button>
+          </span>
+        </h2>
+        <div class="stat-row" id="latest-stats"></div>
+        <div class="diff-box" id="diff-box"></div>
+      </section>
+
+      <!-- UPLOAD -->
+      <section class="panel">
+        <h2>▌INTEL UPLOAD <span class="dim small">— combat record screenshot → OCR</span></h2>
+        <div class="dropzone" id="dropzone">
+          <p>DROP SCREENSHOT HERE<br /><span class="dim">or</span></p>
+          <button id="pick-file">SELECT FILE</button>
+          <input type="file" id="file-input" accept="image/*" hidden />
+        </div>
+        <div id="upload-status" class="upload-status"></div>
+      </section>
+
+      <!-- SESSIONS -->
+      <section class="panel">
+        <h2>▌DEPLOYMENT LOG <span class="dim small">— auto-detected play sessions</span></h2>
+        <div id="session-totals" class="session-totals"></div>
+        <div class="table-wrap">
+          <table id="sessions-table">
+            <thead>
+              <tr><th>OP</th><th>GAME</th><th>START</th><th>END</th><th>DURATION</th><th>SRC</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CAMPAIGN -->
+      <section class="panel">
+        <h2>▌CAMPAIGN DOSSIER <span class="dim small">— auto-completed from trophies</span>
+          <button class="mini" id="sync-trophies">SYNC NOW</button>
+        </h2>
+        <div class="campaign-cols">
+          <div>
+            <h3>BLACK OPS</h3>
+            <ul id="campaign-bo1" class="mission-list"></ul>
+          </div>
+          <div>
+            <h3>BLACK OPS II</h3>
+            <ul id="campaign-bo2" class="mission-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- TROPHIES -->
+      <section class="panel">
+        <h2>▌COMMENDATIONS <span class="dim small">— trophy sync</span></h2>
+        <div id="trophy-summary" class="session-totals"></div>
+        <div class="table-wrap tall">
+          <table id="trophies-table">
+            <thead><tr><th></th><th>GAME</th><th>GRADE</th><th>TROPHY</th><th>EARNED</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span class="dim">CLASSIFIED // EYES ONLY — self-hosted combat record. PSN presence sweeps every <span id="poll-interval">60</span>s.</span>
+    </footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
