@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gridiron Egos — Season Hub</title>
+<style>
+  :root {
+    --night: #070C16; --booth: #0E1526; --line: #24304C;
+    --chalk: #F2F6FC; --dim: #93A1BC; --gold: #F5B63F; --turf: #2E9950;
+    --display: 'Arial Black', Impact, sans-serif;
+    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: radial-gradient(1000px 460px at 50% -6%, #14213E 0%, transparent 65%), var(--night);
+    color: var(--chalk);
+    font-family: system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 60px 20px;
+  }
+  .kick { font-family: var(--mono); color: var(--turf); letter-spacing: 4px; font-size: 13px; }
+  h1 {
+    font-family: var(--display); font-size: clamp(42px, 8vw, 76px);
+    letter-spacing: 2px; text-transform: uppercase; margin: 12px 0 6px;
+    background: linear-gradient(180deg, #FFE9B0, var(--gold) 55%, #B87A14);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 6px 0 rgba(0,0,0,.5)); text-align: center; text-wrap: balance;
+  }
+  .sub { color: var(--dim); font-size: 15px; margin-bottom: 44px; text-align: center; max-width: 520px; line-height: 1.5; }
+  .eps { width: min(680px, 100%); display: flex; flex-direction: column; gap: 12px; }
+  a.ep {
+    display: grid; grid-template-columns: 74px 1fr auto; align-items: center; gap: 18px;
+    background: linear-gradient(180deg, #131C31, var(--booth));
+    border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 20px; text-decoration: none; color: var(--chalk);
+    transition: transform 140ms ease, border-color 140ms ease;
+  }
+  a.ep:hover { transform: translateY(-2px); border-color: var(--gold); }
+  .wk { font-family: var(--display); font-size: 13px; color: var(--night); background: var(--gold); border-radius: 6px; text-align: center; padding: 8px 0; }
+  .ep-title { font-weight: 700; font-size: 17px; }
+  .ep-line { font-family: var(--mono); font-size: 12px; color: var(--dim); margin-top: 4px; letter-spacing: 0.5px; }
+  .score { font-family: var(--display); color: var(--turf); font-size: 15px; letter-spacing: 1px; white-space: nowrap; }
+  .soon { opacity: 0.45; pointer-events: none; }
+  .soon .wk { background: var(--line); color: var(--dim); }
+  footer { margin-top: 52px; font-family: var(--mono); font-size: 11px; color: var(--dim); letter-spacing: 1px; text-align: center; line-height: 1.8; }
+</style>
+</head>
+<body>
+  <div class="kick">A WEEKLY FANTASY RECAP CARTOON</div>
+  <h1>Gridiron Egos</h1>
+  <p class="sub">One squad. Nine massive egos. Seventeen weeks of proving they were right about themselves all along.</p>
+  <div class="eps">
+    <a class="ep" href="watch/week01.html">
+      <span class="wk">WK 1</span>
+      <span><span class="ep-title">“Three Points of Glory”</span><br>
+        <span class="ep-line">The 201-burger. A kicker claims an entire victory. A flex demands a promotion.</span></span>
+      <span class="score">W 201–198</span>
+    </a>
+    <a class="ep soon" href="#">
+      <span class="wk">WK 2</span>
+      <span><span class="ep-title">Coming after next week's games</span><br>
+        <span class="ep-line">drop the week 2 box score in and run the writers' room again</span></span>
+      <span class="score">—</span>
+    </a>
+  </div>
+  <footer>
+    every episode is a single self-contained page · engine/ powers the whole season<br>
+    add a new episodes/weekNN.js + watch/weekNN.html, then node build.js weekNN
+  </footer>
+</body>
+</html>

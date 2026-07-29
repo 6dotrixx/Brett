@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gridiron Egos — Week 1</title>
+<link rel="stylesheet" href="../engine/show.css">
+</head>
+<body>
+  <div id="tv">
+    <div id="screenWrap">
+      <div id="stage">
+        <div id="bg"></div>
+        <div id="cast"></div>
+        <div class="bubble hidden" id="bubble"></div>
+        <div id="narrator" class="hidden"></div>
+        <div id="scorebug"></div>
+        <div id="sceneTitle"></div>
+        <div id="lowerThird"></div>
+        <div id="overlay" class="hidden"></div>
+        <div id="titleCard"></div>
+      </div>
+    </div>
+    <div id="deck">
+      <div id="progress"></div>
+      <div id="deckRow">
+        <button class="dbtn" id="btnRestart" title="Restart">↺</button>
+        <button class="dbtn" id="btnPrev" title="Previous scene">⏮</button>
+        <button class="dbtn" id="btnPlay" title="Play / pause">▶</button>
+        <button class="dbtn" id="btnNext" title="Next scene">⏭</button>
+        <button class="dbtn" id="btnVoice" title="Voice acting on/off">🎙</button>
+        <button class="dbtn" id="btnSfx" title="Crowd &amp; sound effects on/off">🔊</button>
+        <span id="nowPlaying"></span>
+      </div>
+    </div>
+  </div>
+  <div id="footNote">GRIDIRON EGOS · a weekly fantasy recap cartoon · space = pause · ←/→ = scenes</div>
+  <script src="../episodes/week01.js"></script>
+  <script src="../engine/characters.js"></script>
+  <script src="../engine/engine.js"></script>
+</body>
+</html>
