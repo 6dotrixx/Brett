@@ -8,7 +8,7 @@ lower thirds, a scorebug, and an animated box score.
 ## Watch
 
 - **Season hub:** open `index.html`
-- **Episode 1 (Week 1 — “Three Points of Glory”):** open `watch/week01.html`
+- **Episode 1 (Week 1 — “Won by a Foot”):** open `watch/week01.html`
 - **Single-file build** (share it anywhere, no other files needed): `dist/week01.html`
 
 No server or dependencies required — every page works straight off the
