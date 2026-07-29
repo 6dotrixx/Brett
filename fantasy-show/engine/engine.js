@@ -221,6 +221,12 @@
     speak(speaker, text) {
       return new Promise(resolve => {
         if (!this.enabled || !this.available()) return resolve(false);
+        if (!this.voices.length) {
+          const all = speechSynthesis.getVoices();
+          if (!all.length) return resolve(false); // platform has no TTS voices
+          this.voices = all.filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+          if (!this.voices.length) this.voices = all;
+        }
         const p = this.profiles[speaker] || { pitch: 1, rate: 1, vi: 0 };
         const u = new SpeechSynthesisUtterance(text);
         if (this.voices.length) u.voice = this.voices[p.vi % this.voices.length];
@@ -521,12 +527,12 @@
       if (Voice.enabled && Voice.available()) {
         // Voice.speak resolves on utterance end, error, or its own fallback timer
         const t0 = performance.now();
-        await Voice.speak(ln.s, ln.t);
+        const spoke = await Voice.speak(ln.s, ln.t);
         if (token !== this.token) {
           ok = false;
         } else {
-          // keep the bubble up a beat, and never shorter than a readable minimum
-          const minMs = Math.max(2000, dur * 0.5);
+          // keep the bubble up a readable minimum; if TTS was a no-op, use full timed duration
+          const minMs = spoke ? Math.max(2000, dur * 0.5) : dur;
           const elapsed = performance.now() - t0;
           ok = await this.waitMs(Math.max(320, minMs - elapsed), token);
         }
