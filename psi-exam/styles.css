@@ -58,6 +58,7 @@ body {
 .mode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
 .mode h3 { margin: 0 0 6px; }
 .mode p { margin: 0 0 14px; font-size: 14px; color: var(--muted); }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
 
 .section-list { margin-bottom: 14px; max-height: 260px; overflow-y: auto; }
 .section-list label {

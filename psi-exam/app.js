@@ -17,7 +17,7 @@
     screens.forEach(function (s) {
       $("screen-" + s).classList.toggle("hidden", s !== name);
     });
-    $("timer").classList.toggle("hidden", !(name === "exam" && state && state.mode === "sim"));
+    $("timer").classList.toggle("hidden", !(name === "exam" && state && state.deadline));
     $("btn-quit").classList.toggle("hidden", name === "home");
   }
 
@@ -258,6 +258,9 @@
 
   $("btn-start-sim").addEventListener("click", function () {
     start("sim", BANK, Math.min(SIM_QUESTIONS, BANK.length), true);
+  });
+  $("btn-start-sim-untimed").addEventListener("click", function () {
+    start("sim", BANK, Math.min(SIM_QUESTIONS, BANK.length), false);
   });
   $("btn-start-quick").addEventListener("click", function () {
     start("quick", BANK, QUICK_QUESTIONS, false);
