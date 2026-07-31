@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ Property &amp; Casualty — PSI Practice Exam</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-badge">AZ</span>
+      <div>
+        <h1>Arizona Property &amp; Casualty Producer</h1>
+        <p>PSI-style practice exam &amp; question bank</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div id="timer" class="timer hidden">--:--:--</div>
+      <button id="btn-quit" class="btn ghost hidden">Exit</button>
+    </div>
+  </header>
+
+  <!-- HOME -->
+  <section id="screen-home" class="screen">
+    <div class="card intro">
+      <h2>Choose a study mode</h2>
+      <p class="muted">
+        This bank contains <strong><span id="bank-count">–</span> original practice questions</strong> written to the
+        PSI Arizona Property &amp; Casualty content outline. It is a study aid — not actual PSI exam content.
+        Verify current state figures with DIFI / the PSI candidate handbook before test day.
+      </p>
+    </div>
+
+    <div class="mode-grid">
+      <div class="card mode">
+        <h3>Full Exam Simulation</h3>
+        <p>150 questions, 165-minute timer, no feedback until you submit. Passing score 70%, just like the real thing.</p>
+        <button class="btn primary" id="btn-start-sim">Start simulation</button>
+      </div>
+      <div class="card mode">
+        <h3>Quick Quiz</h3>
+        <p>25 random questions from the whole outline with instant feedback and explanations.</p>
+        <button class="btn primary" id="btn-start-quick">Start quick quiz</button>
+      </div>
+      <div class="card mode">
+        <h3>Practice by Section</h3>
+        <p>Drill specific outline topics with instant feedback.</p>
+        <div id="section-list" class="section-list"></div>
+        <button class="btn primary" id="btn-start-practice">Practice selected sections</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXAM -->
+  <section id="screen-exam" class="screen hidden">
+    <div class="exam-layout">
+      <div class="card question-card">
+        <div class="q-meta">
+          <span id="q-position"></span>
+          <span id="q-section" class="pill"></span>
+        </div>
+        <p id="q-text" class="q-text"></p>
+        <div id="q-choices" class="choices"></div>
+        <div id="q-feedback" class="feedback hidden"></div>
+        <div class="q-actions">
+          <button class="btn ghost" id="btn-prev">← Previous</button>
+          <button class="btn ghost" id="btn-flag">⚑ Flag</button>
+          <button class="btn" id="btn-next">Next →</button>
+          <button class="btn primary" id="btn-submit">Submit exam</button>
+        </div>
+      </div>
+      <aside class="card navigator">
+        <h4>Questions</h4>
+        <div id="nav-grid" class="nav-grid"></div>
+        <div class="legend">
+          <span><i class="dot answered"></i>Answered</span>
+          <span><i class="dot flagged"></i>Flagged</span>
+          <span><i class="dot current"></i>Current</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="screen-results" class="screen hidden">
+    <div class="card results-card">
+      <h2 id="result-headline"></h2>
+      <div class="score-row">
+        <div class="score-big" id="result-score"></div>
+        <div>
+          <p id="result-detail" class="muted"></p>
+          <p class="muted">Passing score: 70%</p>
+        </div>
+      </div>
+      <h3>Breakdown by section</h3>
+      <table id="result-sections" class="section-table"></table>
+      <div class="q-actions">
+        <button class="btn primary" id="btn-review">Review answers</button>
+        <button class="btn ghost" id="btn-home">Back to menu</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEW -->
+  <section id="screen-review" class="screen hidden">
+    <div class="card">
+      <div class="review-head">
+        <h2>Answer review</h2>
+        <label class="check"><input type="checkbox" id="review-missed-only" checked> Show missed only</label>
+        <button class="btn ghost" id="btn-review-back">Back to results</button>
+      </div>
+      <div id="review-list"></div>
+    </div>
+  </section>
+</div>
+
+<script src="data/bank-a.js"></script>
+<script src="data/bank-b.js"></script>
+<script src="data/bank-c.js"></script>
+<script src="data/bank-d.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
