@@ -11,7 +11,53 @@
   --bad: #b3372f;
   --bad-bg: #fbe9e7;
   --flag: #b07d1a;
+  --select-bg: #faf3f3;
   --radius: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161c;
+    --card: #1e222b;
+    --ink: #e8eaf0;
+    --muted: #9aa3b5;
+    --line: #323847;
+    --accent: #c05a5e;
+    --good: #4cc98a;
+    --good-bg: #21362a;
+    --bad: #e07068;
+    --bad-bg: #3a2523;
+    --flag: #d9a441;
+    --select-bg: #2b2226;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161c;
+  --card: #1e222b;
+  --ink: #e8eaf0;
+  --muted: #9aa3b5;
+  --line: #323847;
+  --accent: #c05a5e;
+  --good: #4cc98a;
+  --good-bg: #21362a;
+  --bad: #e07068;
+  --bad-bg: #3a2523;
+  --flag: #d9a441;
+  --select-bg: #2b2226;
+}
+:root[data-theme="light"] {
+  --bg: #f4f6fa;
+  --card: #ffffff;
+  --ink: #1c2333;
+  --muted: #5b6474;
+  --line: #dde3ee;
+  --accent: #8a3033;
+  --good: #1e7f4f;
+  --good-bg: #e3f4ea;
+  --bad: #b3372f;
+  --bad-bg: #fbe9e7;
+  --flag: #b07d1a;
+  --select-bg: #faf3f3;
 }
 
 * { box-sizing: border-box; }
@@ -99,7 +145,7 @@ body {
   width: 26px; height: 26px; flex: 0 0 26px;
   display: flex; align-items: center; justify-content: center; font-size: 13px;
 }
-.choice.selected { border-color: var(--accent); background: #faf3f3; }
+.choice.selected { border-color: var(--accent); background: var(--select-bg); }
 .choice.selected .letter { background: var(--accent); border-color: var(--accent); color: #fff; }
 .choice.correct { border-color: var(--good); background: var(--good-bg); }
 .choice.correct .letter { background: var(--good); border-color: var(--good); color: #fff; }
