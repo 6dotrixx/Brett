@@ -41,20 +41,94 @@
   }
 
   // Build an exam item with shuffled choices, tracking the correct index.
-  function makeItem(q) {
-    var order = shuffle(q.c.map(function (_, i) { return i; }));
+  function makeItem(q, order) {
+    order = order || shuffle(q.c.map(function (_, i) { return i; }));
     return {
       q: q,
+      order: order,
       choices: order.map(function (i) { return q.c[i]; }),
       answer: order.indexOf(q.a)
     };
+  }
+
+  // ---- Persistence (localStorage) ----
+  var SESSION_KEY = "azpc-exam-session";
+  var RESULT_KEY = "azpc-last-result";
+
+  function saveSession() {
+    if (!state) return;
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({
+        mode: state.mode,
+        idx: state.idx,
+        answers: state.answers,
+        flags: state.flags,
+        items: state.items.map(function (it) { return { qid: it.q.id, order: it.order }; }),
+        remainingMs: state.deadline ? Math.max(0, state.deadline - Date.now()) : null,
+        savedAt: Date.now()
+      }));
+    } catch (e) { /* storage unavailable — run without persistence */ }
+  }
+
+  function clearSession() {
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+  }
+
+  function loadSession() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      var s = JSON.parse(raw);
+      if (!s || !Array.isArray(s.items) || !s.items.length) return null;
+      return s;
+    } catch (e) { return null; }
+  }
+
+  function resumeSession(saved) {
+    state = {
+      mode: saved.mode,
+      items: saved.items.map(function (it) { return makeItem(BANK[it.qid], it.order); }),
+      answers: saved.answers,
+      flags: saved.flags,
+      idx: Math.min(saved.idx, saved.items.length - 1),
+      deadline: saved.remainingMs !== null ? Date.now() + saved.remainingMs : null,
+      timerId: null
+    };
+    if (state.deadline) {
+      state.timerId = setInterval(tick, 500);
+      tick();
+    }
+    buildNav();
+    render();
+    show("exam");
+  }
+
+  function refreshHome() {
+    var saved = loadSession();
+    var card = $("resume-card");
+    card.classList.toggle("hidden", !saved);
+    if (saved) {
+      var done = saved.answers.filter(function (a) { return a !== null; }).length;
+      var when = new Date(saved.savedAt).toLocaleString();
+      $("resume-detail").textContent = done + " of " + saved.items.length +
+        " answered · saved " + when +
+        (saved.remainingMs !== null ? " · " + Math.ceil(saved.remainingMs / 60000) + " min left on the clock" : " · untimed");
+    }
+    var last = null;
+    try { last = JSON.parse(localStorage.getItem(RESULT_KEY)); } catch (e) {}
+    $("last-result").classList.toggle("hidden", !last);
+    if (last) {
+      $("last-result").textContent = "Last completed attempt: " + last.pct + "% (" +
+        last.correct + "/" + last.total + ") — " + (last.pct >= PASS_PCT ? "PASS" : "below passing") +
+        " · " + new Date(last.when).toLocaleString();
+    }
   }
 
   function start(mode, pool, count, timed) {
     var picked = shuffle(pool).slice(0, count);
     state = {
       mode: mode,
-      items: picked.map(makeItem),
+      items: picked.map(function (q) { return makeItem(q); }),
       answers: new Array(picked.length).fill(null),
       flags: new Array(picked.length).fill(false),
       idx: 0,
@@ -67,11 +141,14 @@
     }
     buildNav();
     render();
+    saveSession();
     show("exam");
   }
 
+  var lastTickSave = 0;
   function tick() {
     var left = state.deadline - Date.now();
+    if (Date.now() - lastTickSave > 10000) { lastTickSave = Date.now(); saveSession(); }
     if (left <= 0) {
       clearInterval(state.timerId);
       $("timer").textContent = "0:00:00";
@@ -148,6 +225,7 @@
       cells[c].classList.toggle("flagged", state.flags[c]);
       cells[c].classList.toggle("current", c === i);
     }
+    saveSession();
   }
 
   function finish(auto) {
@@ -171,6 +249,12 @@
 
     var pct = Math.round((correct / state.items.length) * 100);
     var pass = pct >= PASS_PCT;
+    clearSession();
+    try {
+      localStorage.setItem(RESULT_KEY, JSON.stringify({
+        pct: pct, correct: correct, total: state.items.length, mode: state.mode, when: Date.now()
+      }));
+    } catch (e) {}
     $("result-headline").textContent = pass ? "PASS — nice work!" : "Not yet — keep drilling.";
     $("result-score").textContent = pct + "%";
     $("result-score").className = "score-big " + (pass ? "pass" : "fail");
@@ -255,6 +339,18 @@
   // Wiring
   $("bank-count").textContent = BANK.length;
   buildSectionList();
+  refreshHome();
+
+  $("btn-resume").addEventListener("click", function () {
+    var saved = loadSession();
+    if (!saved) { refreshHome(); return; }
+    resumeSession(saved);
+  });
+  $("btn-discard").addEventListener("click", function () {
+    if (!window.confirm("Discard the saved exam? Its answers will be lost.")) return;
+    clearSession();
+    refreshHome();
+  });
 
   $("btn-start-sim").addEventListener("click", function () {
     start("sim", BANK, Math.min(SIM_QUESTIONS, BANK.length), true);
@@ -282,12 +378,14 @@
   });
   $("btn-submit").addEventListener("click", function () { finish(false); });
   $("btn-quit").addEventListener("click", function () {
+    if (state) saveSession(); // progress stays resumable from the home screen
     if (state && state.timerId) clearInterval(state.timerId);
     state = null;
+    refreshHome();
     show("home");
   });
   $("btn-review").addEventListener("click", function () { renderReview(); show("review"); });
   $("btn-review-back").addEventListener("click", function () { show("results"); });
-  $("btn-home").addEventListener("click", function () { state = null; show("home"); });
+  $("btn-home").addEventListener("click", function () { state = null; refreshHome(); show("home"); });
   $("review-missed-only").addEventListener("change", renderReview);
 })();
