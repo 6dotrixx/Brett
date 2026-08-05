@@ -63,6 +63,7 @@
         <h3>Practice by Section</h3>
         <p>Drill specific outline topics with instant feedback.</p>
         <div id="section-list" class="section-list"></div>
+        <p id="practice-msg" class="inline-msg hidden">Pick at least one section first.</p>
         <button class="btn primary" id="btn-start-practice">Practice selected sections</button>
       </div>
     </div>
@@ -84,6 +85,13 @@
           <button class="btn ghost" id="btn-flag">⚑ Flag</button>
           <button class="btn" id="btn-next">Next →</button>
           <button class="btn primary" id="btn-submit">Submit exam</button>
+        </div>
+        <div id="submit-confirm" class="submit-confirm hidden">
+          <p id="submit-confirm-text"></p>
+          <div class="btn-row">
+            <button class="btn primary" id="btn-submit-yes">Yes, score my exam</button>
+            <button class="btn ghost" id="btn-submit-no">Keep going</button>
+          </div>
         </div>
       </div>
       <aside class="card navigator">

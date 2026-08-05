@@ -152,7 +152,7 @@
     if (left <= 0) {
       clearInterval(state.timerId);
       $("timer").textContent = "0:00:00";
-      finish(true);
+      finish();
       return;
     }
     var s = Math.floor(left / 1000);
@@ -179,6 +179,7 @@
     var instant = state.mode !== "sim";
     var answered = state.answers[i] !== null;
 
+    $("submit-confirm").classList.add("hidden");
     $("q-position").textContent = "Question " + (i + 1) + " of " + state.items.length;
     $("q-section").textContent = item.q.s;
     $("q-text").textContent = item.q.q;
@@ -228,14 +229,7 @@
     saveSession();
   }
 
-  function finish(auto) {
-    if (!auto) {
-      var un = state.answers.filter(function (a) { return a === null; }).length;
-      var msg = un > 0
-        ? "You have " + un + " unanswered question" + (un === 1 ? "" : "s") + ". Submit anyway?"
-        : "Submit your exam for scoring?";
-      if (!window.confirm(msg)) return;
-    }
+  function finish() {
     if (state.timerId) clearInterval(state.timerId);
 
     var perSection = {};
@@ -346,8 +340,19 @@
     if (!saved) { refreshHome(); return; }
     resumeSession(saved);
   });
+  var discardArmed = false;
   $("btn-discard").addEventListener("click", function () {
-    if (!window.confirm("Discard the saved exam? Its answers will be lost.")) return;
+    if (!discardArmed) {
+      discardArmed = true;
+      $("btn-discard").textContent = "Really discard? Click again";
+      setTimeout(function () {
+        discardArmed = false;
+        $("btn-discard").textContent = "Discard";
+      }, 5000);
+      return;
+    }
+    discardArmed = false;
+    $("btn-discard").textContent = "Discard";
     clearSession();
     refreshHome();
   });
@@ -365,7 +370,8 @@
     var chosen = Array.prototype.slice.call(
       document.querySelectorAll("#section-list input:checked")
     ).map(function (cb) { return cb.value; });
-    if (!chosen.length) { window.alert("Pick at least one section."); return; }
+    if (!chosen.length) { $("practice-msg").classList.remove("hidden"); return; }
+    $("practice-msg").classList.add("hidden");
     var pool = BANK.filter(function (q) { return chosen.indexOf(q.s) !== -1; });
     start("practice", pool, pool.length, false);
   });
@@ -376,7 +382,24 @@
     state.flags[state.idx] = !state.flags[state.idx];
     render();
   });
-  $("btn-submit").addEventListener("click", function () { finish(false); });
+  // In-page submit confirmation: browser confirm() dialogs are blocked in
+  // sandboxed artifact iframes, so never rely on them.
+  $("btn-submit").addEventListener("click", function () {
+    var un = state.answers.filter(function (a) { return a === null; }).length;
+    $("submit-confirm-text").textContent = un > 0
+      ? "You have answered " + (state.answers.length - un) + " of " + state.answers.length +
+        " questions. The " + un + " unanswered will count as wrong. Submit now?"
+      : "All " + state.answers.length + " questions answered. Submit for scoring?";
+    $("submit-confirm").classList.remove("hidden");
+    $("submit-confirm").scrollIntoView({ block: "nearest" });
+  });
+  $("btn-submit-yes").addEventListener("click", function () {
+    $("submit-confirm").classList.add("hidden");
+    finish();
+  });
+  $("btn-submit-no").addEventListener("click", function () {
+    $("submit-confirm").classList.add("hidden");
+  });
   $("btn-progress").addEventListener("click", function () {
     var box = $("progress-box");
     if (!box.classList.contains("hidden")) { box.classList.add("hidden"); return; }

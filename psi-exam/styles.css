@@ -185,6 +185,13 @@ body {
 .dot.flagged { border: 2px solid var(--flag); }
 .dot.current { background: var(--accent); }
 
+.submit-confirm {
+  margin-top: 16px; border: 1px solid var(--accent); border-radius: 10px;
+  padding: 14px 16px; background: var(--select-bg);
+}
+.submit-confirm p { margin: 0 0 10px; font-size: 14px; font-weight: 600; }
+.inline-msg { color: var(--bad); font-size: 13px; margin: 0 0 10px; }
+
 .progress-btn { width: 100%; margin-top: 14px; }
 .progress-box {
   margin-top: 10px; font-size: 13px; background: var(--bg);
