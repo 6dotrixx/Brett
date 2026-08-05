@@ -185,6 +185,14 @@ body {
 .dot.flagged { border: 2px solid var(--flag); }
 .dot.current { background: var(--accent); }
 
+.progress-btn { width: 100%; margin-top: 14px; }
+.progress-box {
+  margin-top: 10px; font-size: 13px; background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+}
+.progress-box .good-txt { color: var(--good); font-weight: 700; }
+.progress-box .bad-txt { color: var(--bad); font-weight: 700; }
+
 .results-card h2 { margin-top: 0; }
 .score-row { display: flex; align-items: center; gap: 24px; margin-bottom: 18px; }
 .score-big { font-size: 52px; font-weight: 800; }

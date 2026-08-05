@@ -377,6 +377,23 @@
     render();
   });
   $("btn-submit").addEventListener("click", function () { finish(false); });
+  $("btn-progress").addEventListener("click", function () {
+    var box = $("progress-box");
+    if (!box.classList.contains("hidden")) { box.classList.add("hidden"); return; }
+    var right = 0, answered = 0;
+    state.items.forEach(function (item, i) {
+      if (state.answers[i] === null) return;
+      answered++;
+      if (state.answers[i] === item.answer) right++;
+    });
+    var wrong = answered - right;
+    var pct = answered ? Math.round((right / answered) * 100) : 0;
+    box.innerHTML = answered
+      ? answered + " answered · <span class='good-txt'>" + right + " correct</span> · " +
+        "<span class='bad-txt'>" + wrong + " wrong</span> · " + pct + "% so far"
+      : "No questions answered yet.";
+    box.classList.remove("hidden");
+  });
   $("btn-quit").addEventListener("click", function () {
     if (state) saveSession(); // progress stays resumable from the home screen
     if (state && state.timerId) clearInterval(state.timerId);
