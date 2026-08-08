@@ -1,7 +1,10 @@
 (function () {
   "use strict";
 
-  var BANK = [].concat(window.BANK_A, window.BANK_B, window.BANK_C, window.BANK_D);
+  // Order matters: ids are positional, and saved sessions/rotation history
+  // reference them — only ever append new banks at the end.
+  var BANK = [].concat(window.BANK_A, window.BANK_B, window.BANK_C, window.BANK_D,
+    window.BANK_E, window.BANK_F);
   BANK.forEach(function (q, i) { q.id = i; });
 
   var SIM_QUESTIONS = 150;
@@ -124,8 +127,50 @@
     }
   }
 
-  function start(mode, pool, count, timed) {
-    var picked = shuffle(pool).slice(0, count);
+  // ---- Question rotation (mirrors PSI's rotating item pool) ----
+  var SEEN_KEY = "azpc-seen";
+
+  function loadSeen() {
+    try { return JSON.parse(localStorage.getItem(SEEN_KEY)) || {}; } catch (e) { return {}; }
+  }
+
+  function markSeen(questions) {
+    var seen = loadSeen();
+    questions.forEach(function (q) { seen[q.id] = (seen[q.id] || 0) + 1; });
+    try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) {}
+  }
+
+  // Draw `count` questions keeping the outline's section proportions,
+  // preferring questions this browser has seen the fewest times.
+  function drawExam(count) {
+    var seen = loadSeen();
+    var bySec = {};
+    BANK.forEach(function (q) { (bySec[q.s] = bySec[q.s] || []).push(q); });
+    var secs = Object.keys(bySec);
+
+    var quotas = {}, assigned = 0;
+    secs.forEach(function (s) {
+      quotas[s] = Math.floor(bySec[s].length * count / BANK.length);
+      assigned += quotas[s];
+    });
+    secs.map(function (s) {
+      return { s: s, frac: (bySec[s].length * count / BANK.length) % 1 };
+    }).sort(function (a, b) { return b.frac - a.frac; })
+      .slice(0, count - assigned)
+      .forEach(function (o) { quotas[o.s]++; });
+
+    var picked = [];
+    secs.forEach(function (s) {
+      // Shuffle first so ties in seen-count break randomly (sort is stable).
+      var ranked = shuffle(bySec[s]).sort(function (a, b) {
+        return (seen[a.id] || 0) - (seen[b.id] || 0);
+      });
+      picked = picked.concat(ranked.slice(0, quotas[s]));
+    });
+    return shuffle(picked);
+  }
+
+  function start(mode, picked, timed) {
     state = {
       mode: mode,
       items: picked.map(function (q) { return makeItem(q); }),
@@ -357,14 +402,17 @@
     refreshHome();
   });
 
-  $("btn-start-sim").addEventListener("click", function () {
-    start("sim", BANK, Math.min(SIM_QUESTIONS, BANK.length), true);
-  });
-  $("btn-start-sim-untimed").addEventListener("click", function () {
-    start("sim", BANK, Math.min(SIM_QUESTIONS, BANK.length), false);
-  });
+  function startSim(timed) {
+    var picked = drawExam(Math.min(SIM_QUESTIONS, BANK.length));
+    markSeen(picked);
+    start("sim", picked, timed);
+  }
+  $("btn-start-sim").addEventListener("click", function () { startSim(true); });
+  $("btn-start-sim-untimed").addEventListener("click", function () { startSim(false); });
   $("btn-start-quick").addEventListener("click", function () {
-    start("quick", BANK, QUICK_QUESTIONS, false);
+    var picked = drawExam(QUICK_QUESTIONS);
+    markSeen(picked);
+    start("quick", picked, false);
   });
   $("btn-start-practice").addEventListener("click", function () {
     var chosen = Array.prototype.slice.call(
@@ -373,7 +421,7 @@
     if (!chosen.length) { $("practice-msg").classList.remove("hidden"); return; }
     $("practice-msg").classList.add("hidden");
     var pool = BANK.filter(function (q) { return chosen.indexOf(q.s) !== -1; });
-    start("practice", pool, pool.length, false);
+    start("practice", shuffle(pool), false);
   });
 
   $("btn-prev").addEventListener("click", function () { state.idx--; render(); });
