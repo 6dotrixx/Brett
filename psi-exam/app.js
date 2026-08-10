@@ -5,10 +5,24 @@
   // reference them — only ever append new banks at the end.
   var BANK = [].concat(window.BANK_A, window.BANK_B, window.BANK_C, window.BANK_D,
     window.BANK_E, window.BANK_F);
-  BANK.forEach(function (q, i) { q.id = i; });
+  // Regroup fine-grained authoring topics into the official AZ exam outline's
+  // 10 sections (Series 13-34 structure) so quotas and score breakdowns
+  // mirror the real exam.
+  var SECTION_MAP = {
+    "Arizona Laws & Rules": "Insurance Regulation",
+    "General Insurance Concepts": "General Insurance",
+    "P&C Basics": "Property & Casualty Insurance Basics",
+    "Commercial Property & CPP": "Commercial Package Policy (CPP)",
+    "Commercial General Liability": "Commercial Package Policy (CPP)",
+    "Other Lines: Marine, Crime, Bonds, Umbrella, Flood": "Other Coverages & Options"
+  };
+  BANK.forEach(function (q, i) {
+    q.id = i;
+    q.s = SECTION_MAP[q.s] || q.s;
+  });
 
   var SIM_QUESTIONS = 150;
-  var SIM_MINUTES = 165;
+  var SIM_MINUTES = 150; // 2.5 hours, matching the actual AZ P&C exam
   var QUICK_QUESTIONS = 25;
   var PASS_PCT = 70;
 

@@ -6,8 +6,9 @@ build step or server required.
 
 ## Modes
 
-- **Full Exam Simulation** — 150 questions, 165-minute countdown timer, no feedback
-  until submission, auto-submits at time expiry. Pass mark 70%.
+- **Full Exam Simulation** — 150 questions, 150-minute (2.5-hour) countdown timer
+  matching the real AZ exam, no feedback until submission, auto-submits at time
+  expiry. Pass mark 70%.
 - **Quick Quiz** — 25 random questions with instant feedback and explanations.
 - **Practice by Section** — drill any combination of outline sections with instant feedback.
 
@@ -22,20 +23,21 @@ questions from the pool while preserving the outline's section proportions, and
 questions the browser has seen the fewest times rotate in first (tracked in
 localStorage) — so consecutive attempts are different tests.
 
-| Section | Pool | Per 150-question exam |
+Sections are grouped to the official AZ exam outline's 10 sections (Series 13-34
+structure; authoring topics in the bank files are mapped in `app.js`):
+
+| Official section | Pool | Per 150-question exam |
 | --- | --- | --- |
-| Insurance Regulation | 30 | 15 |
-| General Insurance Concepts | 24 | 12 |
-| P&C Basics | 40 | 20 |
+| Insurance Regulation (incl. AZ laws & rules) | 42 | 21 |
+| General Insurance | 24 | 12 |
+| Property & Casualty Insurance Basics | 40 | 20 |
 | Dwelling Policy | 16 | 8 |
 | Homeowners Policy | 30 | 15 |
 | Auto Insurance | 40 | 20 |
-| Commercial Property & CPP | 24 | 12 |
-| Commercial General Liability | 20 | 10 |
+| Commercial Package Policy (incl. commercial property & CGL) | 44 | 22 |
 | Businessowners Policy | 16 | 8 |
 | Workers Compensation | 24 | 12 |
-| Other Lines (Marine, Crime, Bonds, Umbrella, Flood) | 24 | 12 |
-| Arizona Laws & Rules | 12 | 6 |
+| Other Coverages & Options (marine, crime, bonds, umbrella, flood) | 24 | 12 |
 
 Question format (`data/bank-*.js`):
 
